@@ -1,0 +1,7 @@
+{
+  "server": "apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com",
+  "port": "443",
+  "username": "admin",
+  "password": "InventiveWildcat2@",
+  "blueprint_name": "hpe-blueprint"
+}

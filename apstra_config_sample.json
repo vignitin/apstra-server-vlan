@@ -1,7 +1,7 @@
 {
-  "server": "apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com",
+  "server": "your_apstra_server_name_or_ip",
   "port": "443",
-  "username": "admin",
+  "username": "your_username_here",
   "password": "your_password_here",
   "blueprint_name": "your-blueprint-name"
 }
