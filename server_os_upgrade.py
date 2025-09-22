@@ -52,8 +52,9 @@ class ServerConfig:
     server_name: str
     server_id: str
     server_label: str
-    os_vlan_id: int
-    business_vlan_id: int
+    routing_zone: str
+    os_virtual_network: str
+    business_virtual_network: str
     lag_connections: List[Dict]
     interface_ids: List[str]
 
@@ -185,6 +186,28 @@ class ApstraClient:
             return response.json()
         except Exception as e:
             logger.error(f"Failed to get application endpoints: {e}")
+            raise
+    
+    def get_routing_zones(self) -> Dict:
+        """Get routing zones (security zones) from blueprint"""
+        try:
+            url = f'https://{self.server}/api/blueprints/{self.config.blueprint_id}/security-zones'
+            response = httpx.get(url, headers=self.headers, verify=False, timeout=30.0)
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Failed to get routing zones: {e}")
+            raise
+    
+    def get_virtual_networks(self) -> Dict:
+        """Get virtual networks from blueprint"""
+        try:
+            url = f'https://{self.server}/api/blueprints/{self.config.blueprint_id}/virtual-networks'
+            response = httpx.get(url, headers=self.headers, verify=False, timeout=30.0)
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Failed to get virtual networks: {e}")
             raise
     
     def change_lag_mode(self, link_ids: List[str], lag_mode: str) -> Dict:
@@ -379,51 +402,81 @@ class ServerUpgradeManager:
             server_name=server_name,
             server_id=server_data['id'],
             server_label=server_data['label'],
-            os_vlan_id=0,  # Will be set later
-            business_vlan_id=0,  # Will be set later
+            routing_zone="",  # Will be set later
+            os_virtual_network="",  # Will be set later
+            business_virtual_network="",  # Will be set later
             lag_connections=lag_connections,
             interface_ids=interface_ids
         )
     
-    def discover_vlan_policies(self, os_vlan_id: int, business_vlan_id: int) -> Tuple[str, str, str]:
-        """Discover VLAN policies and application points"""
-        logger.info(f"Discovering VLAN policies for OS VLAN {os_vlan_id} and Business VLAN {business_vlan_id}")
+    def discover_network_policies(self, routing_zone: str, os_vn_name: str, business_vn_name: str) -> Tuple[str, str, str]:
+        """Discover virtual network policies and application points"""
+        logger.info(f"Discovering policies for routing zone '{routing_zone}', OS VN '{os_vn_name}', Business VN '{business_vn_name}'")
         
-        # Get connectivity templates
+        # Get routing zones to validate the specified routing zone exists
+        rz_response = self.client.get_routing_zones()
+        logger.info(f"Routing zones response type: {type(rz_response)}")
+        
+        routing_zone_id = None
+        if isinstance(rz_response, dict):
+            for rz_id, rz_data in rz_response.items():
+                if isinstance(rz_data, dict) and rz_data.get('label') == routing_zone:
+                    routing_zone_id = rz_id
+                    logger.info(f"Found routing zone '{routing_zone}' with ID: {routing_zone_id}")
+                    break
+        
+        if not routing_zone_id:
+            available_rz = []
+            if isinstance(rz_response, dict):
+                available_rz = [rz_data.get('label', 'Unknown') for rz_data in rz_response.values() if isinstance(rz_data, dict)]
+            raise ValueError(f"Routing zone '{routing_zone}' not found. Available routing zones: {available_rz}")
+        
+        # Get virtual networks
+        vn_response = self.client.get_virtual_networks()
+        logger.info(f"Virtual networks response type: {type(vn_response)}")
+        
+        os_vn_id = None
+        business_vn_id = None
+        
+        if isinstance(vn_response, dict):
+            for vn_id, vn_data in vn_response.items():
+                if isinstance(vn_data, dict):
+                    vn_label = vn_data.get('label', '')
+                    vn_security_zone = vn_data.get('security_zone_id', '')
+                    
+                    # Check if this VN is in our routing zone and matches our names
+                    if vn_security_zone == routing_zone_id:
+                        if vn_label == os_vn_name:
+                            os_vn_id = vn_id
+                            logger.info(f"Found OS virtual network '{os_vn_name}' with ID: {os_vn_id}")
+                        elif vn_label == business_vn_name:
+                            business_vn_id = vn_id
+                            logger.info(f"Found business virtual network '{business_vn_name}' with ID: {business_vn_id}")
+        
+        # Get connectivity templates to find policies for these virtual networks
         ct_response = self.client.get_connectivity_templates()
         logger.info(f"Connectivity templates response type: {type(ct_response)}")
-        
-        # Parse the response
-        if isinstance(ct_response, str):
-            import json
-            ct_data = json.loads(ct_response)
-        else:
-            ct_data = ct_response
-            
-        logger.info(f"Parsed CT data type: {type(ct_data)}")
-        if isinstance(ct_data, dict):
-            logger.info(f"CT data keys count: {len(ct_data.keys())}")
-        elif isinstance(ct_data, list):
-            logger.info(f"CT data list length: {len(ct_data)}")
         
         os_policy_id = None
         business_policy_id = None
         
-        # Look for VLAN policies (this is simplified - may need refinement based on actual policy structure)
-        if isinstance(ct_data, dict):
-            for policy_id, policy_data in ct_data.items():
+        if isinstance(ct_response, dict):
+            for policy_id, policy_data in ct_response.items():
                 if isinstance(policy_data, dict) and policy_data.get('visible', False):
-                    # Check if this policy matches our VLANs
-                    policy_label = policy_data.get('label', '').lower()
-                    if str(os_vlan_id) in policy_label or f'vlan{os_vlan_id}' in policy_label:
-                        os_policy_id = policy_id
-                    elif str(business_vlan_id) in policy_label or f'vlan{business_vlan_id}' in policy_label:
-                        business_policy_id = policy_id
+                    # Check if this policy is associated with our virtual networks
+                    policy_attributes = policy_data.get('attributes', {})
+                    if isinstance(policy_attributes, dict):
+                        vn_id = policy_attributes.get('vn_id')
+                        if vn_id == os_vn_id:
+                            os_policy_id = policy_id
+                            logger.info(f"Found OS policy ID: {os_policy_id}")
+                        elif vn_id == business_vn_id:
+                            business_policy_id = policy_id
+                            logger.info(f"Found business policy ID: {business_policy_id}")
         
         # Get application endpoints
         app_endpoints_response = self.client.get_application_endpoints()
         logger.info(f"Application endpoints response type: {type(app_endpoints_response)}")
-        logger.info(f"Application endpoints response keys: {list(app_endpoints_response.keys()) if isinstance(app_endpoints_response, dict) else 'Not a dict'}")
         
         # Parse the response - it has 'application_points' key
         if isinstance(app_endpoints_response, dict):
@@ -439,19 +492,21 @@ class ServerUpgradeManager:
                 if isinstance(app_point, dict):
                     if self.server_config and self.server_config.server_id in str(app_point):
                         server_app_point_id = app_point.get('id')
+                        logger.info(f"Found server application point ID: {server_app_point_id}")
                         break
                 # If app_point is a string (ID), check if it relates to our server
                 elif isinstance(app_point, str):
                     if self.server_config and self.server_config.server_id in app_point:
                         server_app_point_id = app_point
+                        logger.info(f"Found server application point ID: {server_app_point_id}")
                         break
         
         if not os_policy_id:
-            logger.warning(f"Could not automatically discover OS VLAN {os_vlan_id} policy")
+            logger.warning(f"Could not discover policy for OS virtual network '{os_vn_name}'")
         if not business_policy_id:
-            logger.warning(f"Could not automatically discover Business VLAN {business_vlan_id} policy")
+            logger.warning(f"Could not discover policy for business virtual network '{business_vn_name}'")
         if not server_app_point_id:
-            logger.warning("Could not automatically discover server application point")
+            logger.warning("Could not discover server application point")
         
         return os_policy_id, business_policy_id, server_app_point_id
     
@@ -476,16 +531,16 @@ class ServerUpgradeManager:
             for interface_id in interfaces_to_disable:
                 self.client.set_interface_state(interface_id, "admin_down")
             
-            # Step 3: Apply OS VLAN policy
+            # Step 3: Apply OS virtual network policy
             if self.policies.get('os_policy_id') and self.application_points.get('server_app_point_id'):
-                logger.info(f"Step 3: Assigning server to OS VLAN {self.server_config.os_vlan_id}")
+                logger.info(f"Step 3: Assigning server to OS virtual network '{self.server_config.os_virtual_network}'")
                 self.client.apply_vlan_policy(
                     self.application_points['server_app_point_id'],
                     self.policies['os_policy_id'],
                     apply=True
                 )
             else:
-                logger.warning("Skipping VLAN assignment - policies not discovered")
+                logger.warning("Skipping virtual network assignment - policies not discovered")
             
             # Step 4: Deploy configuration
             logger.info("Step 4: Deploying pre-upgrade configuration")
@@ -518,27 +573,27 @@ class ServerUpgradeManager:
             link_ids = [link['id'] for link in self.server_config.lag_connections]
             self.client.change_lag_mode(link_ids, "lacp_active")
             
-            # Step 3: Remove OS VLAN policy
+            # Step 3: Remove OS virtual network policy
             if self.policies.get('os_policy_id') and self.application_points.get('server_app_point_id'):
-                logger.info(f"Step 3: Removing OS VLAN {self.server_config.os_vlan_id} assignment")
+                logger.info(f"Step 3: Removing OS virtual network '{self.server_config.os_virtual_network}' assignment")
                 self.client.apply_vlan_policy(
                     self.application_points['server_app_point_id'],
                     self.policies['os_policy_id'],
                     apply=False
                 )
             else:
-                logger.warning("Skipping OS VLAN removal - policies not discovered")
+                logger.warning("Skipping OS virtual network removal - policies not discovered")
             
-            # Step 4: Apply business VLAN policy
+            # Step 4: Apply business virtual network policy
             if self.policies.get('business_policy_id') and self.application_points.get('server_app_point_id'):
-                logger.info(f"Step 4: Assigning server to Business VLAN {self.server_config.business_vlan_id}")
+                logger.info(f"Step 4: Assigning server to business virtual network '{self.server_config.business_virtual_network}'")
                 self.client.apply_vlan_policy(
                     self.application_points['server_app_point_id'],
                     self.policies['business_policy_id'],
                     apply=True
                 )
             else:
-                logger.warning("Skipping Business VLAN assignment - policies not discovered")
+                logger.warning("Skipping business virtual network assignment - policies not discovered")
             
             # Step 5: Deploy final configuration
             logger.info("Step 5: Deploying post-upgrade configuration")
@@ -552,22 +607,23 @@ class ServerUpgradeManager:
             logger.error(f"Post-upgrade phase failed: {e}")
             raise
     
-    def run_upgrade(self, server_name: str, os_vlan_id: int, business_vlan_id: int, 
+    def run_upgrade(self, server_name: str, routing_zone: str, os_vn_name: str, business_vn_name: str, 
                    auto_complete: bool = False) -> None:
         """Run the complete upgrade process"""
         try:
             # Initialize
             logger.info(f"Starting server OS upgrade for: {server_name}")
-            logger.info(f"OS VLAN: {os_vlan_id}, Business VLAN: {business_vlan_id}")
+            logger.info(f"Routing zone: {routing_zone}, OS VN: {os_vn_name}, Business VN: {business_vn_name}")
             
             # Discover server
             self.server_config = self.discover_server(server_name)
-            self.server_config.os_vlan_id = os_vlan_id
-            self.server_config.business_vlan_id = business_vlan_id
+            self.server_config.routing_zone = routing_zone
+            self.server_config.os_virtual_network = os_vn_name
+            self.server_config.business_virtual_network = business_vn_name
             
             # Discover policies
-            os_policy_id, business_policy_id, server_app_point_id = self.discover_vlan_policies(
-                os_vlan_id, business_vlan_id
+            os_policy_id, business_policy_id, server_app_point_id = self.discover_network_policies(
+                routing_zone, os_vn_name, business_vn_name
             )
             
             self.policies = {
@@ -623,10 +679,12 @@ def main():
                        help='Server name/label to upgrade')
     parser.add_argument('--blueprint-name', '-bp', 
                        help='Blueprint name where the server is located (can also be specified in config file)')
-    parser.add_argument('--os-vlan', '-o', type=int, required=True,
-                       help='OS upgrade VLAN ID')
-    parser.add_argument('--business-vlan', '-b', type=int, required=True,
-                       help='Business VLAN ID')
+    parser.add_argument('--routing-zone', '-rz', required=True,
+                       help='Routing zone name containing both virtual networks')
+    parser.add_argument('--os-vn', '-os', required=True,
+                       help='OS upgrade virtual network name')
+    parser.add_argument('--business-vn', '-bvn', required=True,
+                       help='Business virtual network name')
     
     # Optional arguments
     parser.add_argument('--config', '-c', default='apstra_config.json',
@@ -653,17 +711,21 @@ def main():
         if args.dry_run:
             logger.info("=== DRY RUN MODE ===")
             server_config = upgrade_manager.discover_server(args.server_name)
-            server_config.os_vlan_id = args.os_vlan
-            server_config.business_vlan_id = args.business_vlan
+            server_config.routing_zone = args.routing_zone
+            server_config.os_virtual_network = args.os_vn
+            server_config.business_virtual_network = args.business_vn
             
             logger.info(f"Server Configuration:")
             logger.info(f"  Name: {server_config.server_name}")
             logger.info(f"  ID: {server_config.server_id}")
             logger.info(f"  LAG Connections: {len(server_config.lag_connections)}")
             logger.info(f"  Interface IDs: {server_config.interface_ids}")
+            logger.info(f"  Routing Zone: {server_config.routing_zone}")
+            logger.info(f"  OS Virtual Network: {server_config.os_virtual_network}")
+            logger.info(f"  Business Virtual Network: {server_config.business_virtual_network}")
             
-            os_policy, business_policy, app_point = upgrade_manager.discover_vlan_policies(
-                args.os_vlan, args.business_vlan
+            os_policy, business_policy, app_point = upgrade_manager.discover_network_policies(
+                args.routing_zone, args.os_vn, args.business_vn
             )
             logger.info(f"  OS Policy ID: {os_policy}")
             logger.info(f"  Business Policy ID: {business_policy}")
@@ -672,11 +734,12 @@ def main():
         elif args.post_upgrade:
             logger.info("Running POST-UPGRADE phase only")
             upgrade_manager.server_config = upgrade_manager.discover_server(args.server_name)
-            upgrade_manager.server_config.os_vlan_id = args.os_vlan
-            upgrade_manager.server_config.business_vlan_id = args.business_vlan
+            upgrade_manager.server_config.routing_zone = args.routing_zone
+            upgrade_manager.server_config.os_virtual_network = args.os_vn
+            upgrade_manager.server_config.business_virtual_network = args.business_vn
             
-            os_policy_id, business_policy_id, server_app_point_id = upgrade_manager.discover_vlan_policies(
-                args.os_vlan, args.business_vlan
+            os_policy_id, business_policy_id, server_app_point_id = upgrade_manager.discover_network_policies(
+                args.routing_zone, args.os_vn, args.business_vn
             )
             
             upgrade_manager.policies = {
@@ -693,8 +756,9 @@ def main():
             # Run full upgrade process
             upgrade_manager.run_upgrade(
                 args.server_name, 
-                args.os_vlan, 
-                args.business_vlan,
+                args.routing_zone,
+                args.os_vn,
+                args.business_vn,
                 auto_complete=args.auto_complete
             )
         
