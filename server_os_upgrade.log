@@ -103,3 +103,79 @@
 2025-09-23 01:17:05,475 - ERROR - Pre-upgrade phase failed: Expecting value: line 1 column 1 (char 0)
 2025-09-23 01:17:05,476 - ERROR - Upgrade process failed: Expecting value: line 1 column 1 (char 0)
 2025-09-23 01:17:05,476 - ERROR - Script failed: Expecting value: line 1 column 1 (char 0)
+2025-09-23 01:26:23,069 - INFO - HTTP Request: POST https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/user/login "HTTP/1.1 201 CREATED"
+2025-09-23 01:26:23,070 - INFO - Successfully authenticated with Apstra
+2025-09-23 01:26:24,012 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints "HTTP/1.1 200 OK"
+2025-09-23 01:26:24,015 - INFO - Found blueprint 'hpe-blueprint' with ID: 91de3df7-4ac4-44e6-8374-3fca09126704
+2025-09-23 01:26:24,015 - INFO - Starting server OS upgrade for: hpe_evpn_esi_rack_001_sys001
+2025-09-23 01:26:24,015 - INFO - Routing zone: blue, OS VN: blue_vn_300, Business VN: blue_vn_400
+2025-09-23 01:26:24,016 - INFO - Discovering server configuration for: hpe_evpn_esi_rack_001_sys001
+2025-09-23 01:26:24,921 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/experience/web/system-info "HTTP/1.1 200 OK"
+2025-09-23 01:26:24,924 - INFO - Found server: hpe_evpn_esi_rack_001_sys001 (ID: qYvv5uQ2w8pizAotCw)
+2025-09-23 01:26:25,879 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/experience/web/cabling-map "HTTP/1.1 200 OK"
+2025-09-23 01:26:25,882 - INFO - Found 2 LAG connections with 2 interfaces
+2025-09-23 01:26:25,882 - INFO - Discovering policies for routing zone 'blue', OS VN 'blue_vn_300', Business VN 'blue_vn_400'
+2025-09-23 01:26:26,860 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/security-zones "HTTP/1.1 200 OK"
+2025-09-23 01:26:26,863 - INFO - Routing zones response type: <class 'dict'>
+2025-09-23 01:26:26,863 - ERROR - Upgrade process failed: Routing zone 'blue' not found. Available routing zones: ['Unknown']
+2025-09-23 01:26:26,863 - ERROR - Script failed: Routing zone 'blue' not found. Available routing zones: ['Unknown']
+2025-09-23 01:28:04,659 - INFO - HTTP Request: POST https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/user/login "HTTP/1.1 201 CREATED"
+2025-09-23 01:28:04,660 - INFO - Successfully authenticated with Apstra
+2025-09-23 01:28:05,740 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints "HTTP/1.1 200 OK"
+2025-09-23 01:28:05,742 - INFO - Found blueprint 'hpe-blueprint' with ID: 91de3df7-4ac4-44e6-8374-3fca09126704
+2025-09-23 01:28:05,742 - INFO - === DRY RUN MODE ===
+2025-09-23 01:28:05,742 - INFO - Discovering server configuration for: hpe_evpn_esi_rack_001_sys001
+2025-09-23 01:28:06,757 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/experience/web/system-info "HTTP/1.1 200 OK"
+2025-09-23 01:28:06,759 - INFO - Found server: hpe_evpn_esi_rack_001_sys001 (ID: qYvv5uQ2w8pizAotCw)
+2025-09-23 01:28:07,805 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/experience/web/cabling-map "HTTP/1.1 200 OK"
+2025-09-23 01:28:07,807 - INFO - Found 2 LAG connections with 2 interfaces
+2025-09-23 01:28:07,807 - INFO - Server Configuration:
+2025-09-23 01:28:07,807 - INFO -   Name: hpe_evpn_esi_rack_001_sys001
+2025-09-23 01:28:07,808 - INFO -   ID: qYvv5uQ2w8pizAotCw
+2025-09-23 01:28:07,808 - INFO -   LAG Connections: 2
+2025-09-23 01:28:07,808 - INFO -   Interface IDs: ['AptCGY99td1TXBvqng', 'Faap40tduyOgGiNRXg']
+2025-09-23 01:28:07,808 - INFO -   Routing Zone: test
+2025-09-23 01:28:07,808 - INFO -   OS Virtual Network: test_os
+2025-09-23 01:28:07,808 - INFO -   Business Virtual Network: test_business
+2025-09-23 01:28:07,808 - INFO - Discovering policies for routing zone 'test', OS VN 'test_os', Business VN 'test_business'
+2025-09-23 01:28:08,853 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/security-zones "HTTP/1.1 200 OK"
+2025-09-23 01:28:08,855 - INFO - Routing zones response type: <class 'dict'>
+2025-09-23 01:28:08,855 - INFO - Available routing zones: ['Default routing zone', 'blue']
+2025-09-23 01:28:08,856 - ERROR - Script failed: Routing zone 'test' not found. Available routing zones: ['Default routing zone', 'blue']
+2025-09-23 01:28:34,598 - INFO - HTTP Request: POST https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/user/login "HTTP/1.1 201 CREATED"
+2025-09-23 01:28:34,599 - INFO - Successfully authenticated with Apstra
+2025-09-23 01:28:35,529 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints "HTTP/1.1 200 OK"
+2025-09-23 01:28:35,531 - INFO - Found blueprint 'hpe-blueprint' with ID: 91de3df7-4ac4-44e6-8374-3fca09126704
+2025-09-23 01:28:35,531 - INFO - === DRY RUN MODE ===
+2025-09-23 01:28:35,531 - INFO - Discovering server configuration for: hpe_evpn_esi_rack_001_sys001
+2025-09-23 01:28:36,494 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/experience/web/system-info "HTTP/1.1 200 OK"
+2025-09-23 01:28:36,496 - INFO - Found server: hpe_evpn_esi_rack_001_sys001 (ID: qYvv5uQ2w8pizAotCw)
+2025-09-23 01:28:37,483 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/experience/web/cabling-map "HTTP/1.1 200 OK"
+2025-09-23 01:28:37,485 - INFO - Found 2 LAG connections with 2 interfaces
+2025-09-23 01:28:37,485 - INFO - Server Configuration:
+2025-09-23 01:28:37,485 - INFO -   Name: hpe_evpn_esi_rack_001_sys001
+2025-09-23 01:28:37,485 - INFO -   ID: qYvv5uQ2w8pizAotCw
+2025-09-23 01:28:37,485 - INFO -   LAG Connections: 2
+2025-09-23 01:28:37,485 - INFO -   Interface IDs: ['AptCGY99td1TXBvqng', 'Faap40tduyOgGiNRXg']
+2025-09-23 01:28:37,485 - INFO -   Routing Zone: blue
+2025-09-23 01:28:37,485 - INFO -   OS Virtual Network: test_os_vn
+2025-09-23 01:28:37,485 - INFO -   Business Virtual Network: test_business_vn
+2025-09-23 01:28:37,485 - INFO - Discovering policies for routing zone 'blue', OS VN 'test_os_vn', Business VN 'test_business_vn'
+2025-09-23 01:28:38,485 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/security-zones "HTTP/1.1 200 OK"
+2025-09-23 01:28:38,487 - INFO - Routing zones response type: <class 'dict'>
+2025-09-23 01:28:38,487 - INFO - Found routing zone 'blue' with ID: z-9l-oFvVrcyGk3B2g
+2025-09-23 01:28:38,487 - INFO - Available routing zones: ['Default routing zone', 'blue']
+2025-09-23 01:28:39,456 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/virtual-networks "HTTP/1.1 200 OK"
+2025-09-23 01:28:39,458 - INFO - Virtual networks response type: <class 'dict'>
+2025-09-23 01:28:39,458 - INFO - Available virtual networks: ['Unknown (zone: )']
+2025-09-23 01:28:40,406 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/obj-policy-export "HTTP/1.1 200 OK"
+2025-09-23 01:28:40,408 - INFO - Connectivity templates response type: <class 'dict'>
+2025-09-23 01:28:41,378 - INFO - HTTP Request: POST https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/obj-policy-application-points "HTTP/1.1 201 CREATED"
+2025-09-23 01:28:41,380 - INFO - Application endpoints response type: <class 'dict'>
+2025-09-23 01:28:41,380 - WARNING - Could not discover policy for OS virtual network 'test_os_vn'
+2025-09-23 01:28:41,380 - WARNING - Could not discover policy for business virtual network 'test_business_vn'
+2025-09-23 01:28:41,380 - WARNING - Could not discover server application point
+2025-09-23 01:28:41,380 - INFO -   OS Policy ID: None
+2025-09-23 01:28:41,380 - INFO -   Business Policy ID: None
+2025-09-23 01:28:41,380 - INFO -   Application Point ID: None
+2025-09-23 01:28:41,380 - INFO - Script completed successfully!

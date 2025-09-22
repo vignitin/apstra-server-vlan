@@ -417,32 +417,48 @@ class ServerUpgradeManager:
         rz_response = self.client.get_routing_zones()
         logger.info(f"Routing zones response type: {type(rz_response)}")
         
+        # Parse routing zones response - it has an 'items' key
+        rz_data = rz_response
+        if isinstance(rz_response, dict) and 'items' in rz_response:
+            rz_data = rz_response['items']
+        
         routing_zone_id = None
-        if isinstance(rz_response, dict):
-            for rz_id, rz_data in rz_response.items():
-                if isinstance(rz_data, dict) and rz_data.get('label') == routing_zone:
-                    routing_zone_id = rz_id
-                    logger.info(f"Found routing zone '{routing_zone}' with ID: {routing_zone_id}")
-                    break
+        available_rz = []
+        
+        if isinstance(rz_data, dict):
+            for rz_id, rz_info in rz_data.items():
+                if isinstance(rz_info, dict):
+                    rz_label = rz_info.get('label', rz_info.get('name', 'Unknown'))
+                    available_rz.append(rz_label)
+                    if rz_label == routing_zone:
+                        routing_zone_id = rz_id
+                        logger.info(f"Found routing zone '{routing_zone}' with ID: {routing_zone_id}")
+                        break
+        
+        logger.info(f"Available routing zones: {available_rz}")
         
         if not routing_zone_id:
-            available_rz = []
-            if isinstance(rz_response, dict):
-                available_rz = [rz_data.get('label', 'Unknown') for rz_data in rz_response.values() if isinstance(rz_data, dict)]
             raise ValueError(f"Routing zone '{routing_zone}' not found. Available routing zones: {available_rz}")
         
         # Get virtual networks
         vn_response = self.client.get_virtual_networks()
         logger.info(f"Virtual networks response type: {type(vn_response)}")
         
+        # Parse virtual networks response - might have an 'items' key
+        vn_data = vn_response
+        if isinstance(vn_response, dict) and 'items' in vn_response:
+            vn_data = vn_response['items']
+        
         os_vn_id = None
         business_vn_id = None
+        available_vns = []
         
-        if isinstance(vn_response, dict):
-            for vn_id, vn_data in vn_response.items():
-                if isinstance(vn_data, dict):
-                    vn_label = vn_data.get('label', '')
-                    vn_security_zone = vn_data.get('security_zone_id', '')
+        if isinstance(vn_data, dict):
+            for vn_id, vn_info in vn_data.items():
+                if isinstance(vn_info, dict):
+                    vn_label = vn_info.get('label', vn_info.get('name', 'Unknown'))
+                    vn_security_zone = vn_info.get('security_zone_id', '')
+                    available_vns.append(f"{vn_label} (zone: {vn_security_zone})")
                     
                     # Check if this VN is in our routing zone and matches our names
                     if vn_security_zone == routing_zone_id:
@@ -452,6 +468,8 @@ class ServerUpgradeManager:
                         elif vn_label == business_vn_name:
                             business_vn_id = vn_id
                             logger.info(f"Found business virtual network '{business_vn_name}' with ID: {business_vn_id}")
+        
+        logger.info(f"Available virtual networks: {available_vns}")
         
         # Get connectivity templates to find policies for these virtual networks
         ct_response = self.client.get_connectivity_templates()
