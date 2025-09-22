@@ -390,31 +390,61 @@ class ServerUpgradeManager:
         logger.info(f"Discovering VLAN policies for OS VLAN {os_vlan_id} and Business VLAN {business_vlan_id}")
         
         # Get connectivity templates
-        ct_data = self.client.get_connectivity_templates()
+        ct_response = self.client.get_connectivity_templates()
+        logger.info(f"Connectivity templates response type: {type(ct_response)}")
+        
+        # Parse the response
+        if isinstance(ct_response, str):
+            import json
+            ct_data = json.loads(ct_response)
+        else:
+            ct_data = ct_response
+            
+        logger.info(f"Parsed CT data type: {type(ct_data)}")
+        if isinstance(ct_data, dict):
+            logger.info(f"CT data keys count: {len(ct_data.keys())}")
+        elif isinstance(ct_data, list):
+            logger.info(f"CT data list length: {len(ct_data)}")
         
         os_policy_id = None
         business_policy_id = None
         
         # Look for VLAN policies (this is simplified - may need refinement based on actual policy structure)
-        for policy_id, policy_data in ct_data.items():
-            if policy_data.get('visible', False):
-                # Check if this policy matches our VLANs
-                policy_label = policy_data.get('label', '').lower()
-                if str(os_vlan_id) in policy_label or f'vlan{os_vlan_id}' in policy_label:
-                    os_policy_id = policy_id
-                elif str(business_vlan_id) in policy_label or f'vlan{business_vlan_id}' in policy_label:
-                    business_policy_id = policy_id
+        if isinstance(ct_data, dict):
+            for policy_id, policy_data in ct_data.items():
+                if isinstance(policy_data, dict) and policy_data.get('visible', False):
+                    # Check if this policy matches our VLANs
+                    policy_label = policy_data.get('label', '').lower()
+                    if str(os_vlan_id) in policy_label or f'vlan{os_vlan_id}' in policy_label:
+                        os_policy_id = policy_id
+                    elif str(business_vlan_id) in policy_label or f'vlan{business_vlan_id}' in policy_label:
+                        business_policy_id = policy_id
         
         # Get application endpoints
-        app_endpoints = self.client.get_application_endpoints()
+        app_endpoints_response = self.client.get_application_endpoints()
+        logger.info(f"Application endpoints response type: {type(app_endpoints_response)}")
+        logger.info(f"Application endpoints response keys: {list(app_endpoints_response.keys()) if isinstance(app_endpoints_response, dict) else 'Not a dict'}")
+        
+        # Parse the response - it has 'application_points' key
+        if isinstance(app_endpoints_response, dict):
+            app_endpoints = app_endpoints_response.get('application_points', app_endpoints_response)
+        else:
+            app_endpoints = app_endpoints_response
         
         # Find application point for our server
         server_app_point_id = None
-        for app_point in app_endpoints:
-            # This logic may need refinement based on actual application point structure
-            if self.server_config and self.server_config.server_id in str(app_point):
-                server_app_point_id = app_point.get('id')
-                break
+        if isinstance(app_endpoints, list):
+            for app_point in app_endpoints:
+                # Check if app_point is a dictionary and contains our server reference
+                if isinstance(app_point, dict):
+                    if self.server_config and self.server_config.server_id in str(app_point):
+                        server_app_point_id = app_point.get('id')
+                        break
+                # If app_point is a string (ID), check if it relates to our server
+                elif isinstance(app_point, str):
+                    if self.server_config and self.server_config.server_id in app_point:
+                        server_app_point_id = app_point
+                        break
         
         if not os_policy_id:
             logger.warning(f"Could not automatically discover OS VLAN {os_vlan_id} policy")

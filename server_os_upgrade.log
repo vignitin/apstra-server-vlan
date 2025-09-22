@@ -1,0 +1,45 @@
+2025-09-23 01:06:55,658 - INFO - HTTP Request: POST https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/user/login "HTTP/1.1 201 CREATED"
+2025-09-23 01:06:55,660 - INFO - Successfully authenticated with Apstra
+2025-09-23 01:06:56,792 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints "HTTP/1.1 200 OK"
+2025-09-23 01:06:56,794 - INFO - Found blueprint 'hpe-blueprint' with ID: 91de3df7-4ac4-44e6-8374-3fca09126704
+2025-09-23 01:06:56,795 - INFO - Starting server OS upgrade for: hpe_evpn_esi_rack_001_sys001
+2025-09-23 01:06:56,795 - INFO - OS VLAN: 300, Business VLAN: 400
+2025-09-23 01:06:56,795 - INFO - Discovering server configuration for: hpe_evpn_esi_rack_001_sys001
+2025-09-23 01:06:57,840 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/experience/web/system-info "HTTP/1.1 200 OK"
+2025-09-23 01:06:57,844 - INFO - Found server: hpe_evpn_esi_rack_001_sys001 (ID: qYvv5uQ2w8pizAotCw)
+2025-09-23 01:06:58,889 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/experience/web/cabling-map "HTTP/1.1 200 OK"
+2025-09-23 01:06:58,892 - INFO - Found 2 LAG connections with 2 interfaces
+2025-09-23 01:06:58,893 - INFO - Discovering VLAN policies for OS VLAN 300 and Business VLAN 400
+2025-09-23 01:06:59,936 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/obj-policy-export "HTTP/1.1 200 OK"
+2025-09-23 01:06:59,939 - ERROR - Upgrade process failed: 'list' object has no attribute 'get'
+2025-09-23 01:06:59,939 - ERROR - Script failed: 'list' object has no attribute 'get'
+2025-09-23 01:11:25,262 - INFO - HTTP Request: POST https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/user/login "HTTP/1.1 201 CREATED"
+2025-09-23 01:11:25,263 - INFO - Successfully authenticated with Apstra
+2025-09-23 01:11:26,265 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints "HTTP/1.1 200 OK"
+2025-09-23 01:11:26,268 - INFO - Found blueprint 'hpe-blueprint' with ID: 91de3df7-4ac4-44e6-8374-3fca09126704
+2025-09-23 01:11:26,268 - INFO - === DRY RUN MODE ===
+2025-09-23 01:11:26,268 - INFO - Discovering server configuration for: hpe_evpn_esi_rack_001_sys001
+2025-09-23 01:11:27,315 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/experience/web/system-info "HTTP/1.1 200 OK"
+2025-09-23 01:11:27,317 - INFO - Found server: hpe_evpn_esi_rack_001_sys001 (ID: qYvv5uQ2w8pizAotCw)
+2025-09-23 01:11:28,278 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/experience/web/cabling-map "HTTP/1.1 200 OK"
+2025-09-23 01:11:28,364 - INFO - Found 2 LAG connections with 2 interfaces
+2025-09-23 01:11:28,364 - INFO - Server Configuration:
+2025-09-23 01:11:28,364 - INFO -   Name: hpe_evpn_esi_rack_001_sys001
+2025-09-23 01:11:28,364 - INFO -   ID: qYvv5uQ2w8pizAotCw
+2025-09-23 01:11:28,364 - INFO -   LAG Connections: 2
+2025-09-23 01:11:28,364 - INFO -   Interface IDs: ['AptCGY99td1TXBvqng', 'Faap40tduyOgGiNRXg']
+2025-09-23 01:11:28,364 - INFO - Discovering VLAN policies for OS VLAN 300 and Business VLAN 400
+2025-09-23 01:11:29,411 - INFO - HTTP Request: GET https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/obj-policy-export "HTTP/1.1 200 OK"
+2025-09-23 01:11:29,412 - INFO - Connectivity templates response type: <class 'dict'>
+2025-09-23 01:11:29,412 - INFO - Parsed CT data type: <class 'dict'>
+2025-09-23 01:11:29,412 - INFO - CT data keys count: 1
+2025-09-23 01:11:30,459 - INFO - HTTP Request: POST https://apstra-920bfdb9-2c0b-42e8-bdf2-4e184ebf12d6.aws.apstra.com/api/blueprints/91de3df7-4ac4-44e6-8374-3fca09126704/obj-policy-application-points "HTTP/1.1 201 CREATED"
+2025-09-23 01:11:30,461 - INFO - Application endpoints response type: <class 'dict'>
+2025-09-23 01:11:30,462 - INFO - Application endpoints response keys: ['application_points', 'node_types']
+2025-09-23 01:11:30,462 - WARNING - Could not automatically discover OS VLAN 300 policy
+2025-09-23 01:11:30,462 - WARNING - Could not automatically discover Business VLAN 400 policy
+2025-09-23 01:11:30,462 - WARNING - Could not automatically discover server application point
+2025-09-23 01:11:30,462 - INFO -   OS Policy ID: None
+2025-09-23 01:11:30,463 - INFO -   Business Policy ID: None
+2025-09-23 01:11:30,463 - INFO -   Application Point ID: None
+2025-09-23 01:11:30,463 - INFO - Script completed successfully!
