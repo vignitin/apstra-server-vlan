@@ -1,6 +1,6 @@
-# Server OS Upgrade Automation Script
+# Apstra Server VLAN Management Script
 
-This Python script automates the server OS upgrade process in Juniper Apstra environments with dual-LAG configurations.
+This Python script automates server VLAN management and OS upgrade processes in Juniper Apstra environments with dual-LAG configurations.
 
 ## Overview
 
@@ -69,7 +69,7 @@ The script expects servers with the following configuration:
 
 Run the complete pre-upgrade phase:
 ```bash
-python server_os_upgrade.py --server-name "server001" --blueprint-name "datacenter-blueprint" --os-vlan 2000 --business-vlan 100
+python apstra_server_vlan.py --server-name "server001" --blueprint-name "datacenter-blueprint" --os-vlan 2000 --business-vlan 100
 ```
 
 ### Command Line Options
@@ -94,24 +94,24 @@ Optional Arguments:
 
 **Step 1: Pre-Upgrade**
 ```bash
-python server_os_upgrade.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 100
+python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 100
 ```
 
 **Step 2: Perform OS Upgrade** (Manual process)
 
 **Step 3: Post-Upgrade**
 ```bash
-python server_os_upgrade.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 100 --post-upgrade
+python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 100 --post-upgrade
 ```
 
 #### 2. Dry Run (Discovery Only)
 ```bash
-python server_os_upgrade.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 100 --dry-run
+python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 100 --dry-run
 ```
 
 #### 3. Auto-Complete (Testing Only)
 ```bash
-python server_os_upgrade.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 100 --auto-complete
+python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 100 --auto-complete
 ```
 
 ## Script Features
@@ -135,7 +135,7 @@ python server_os_upgrade.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b
 
 ## Logging
 
-The script creates detailed logs in `server_os_upgrade.log` including:
+The script creates detailed logs in `apstra_server_vlan.log` including:
 - All API calls and responses
 - Configuration changes
 - Error details
@@ -147,15 +147,15 @@ Based on the provided JSON data, here's an example using the discovered server:
 
 ```bash
 # Dry run to verify configuration
-python server_os_upgrade.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 300 --dry-run
+python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 300 --dry-run
 
 # Pre-upgrade phase
-python server_os_upgrade.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 300
+python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 300
 
 # [Perform OS upgrade manually]
 
 # Post-upgrade phase
-python server_os_upgrade.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 300 --post-upgrade
+python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 300 --post-upgrade
 ```
 
 ## Network Topology

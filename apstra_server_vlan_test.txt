@@ -1,0 +1,127 @@
+(base) nitinvig@nitinvig-mbp server_os_upgrade % python server_os_upgrade.py -s 'hpe_evpn_esi_rack_001_sys001' -rz 'blue' -os 'blue_vn_300'
+
+============================================================
+🔍 INITIALIZING SERVER OS UPGRADE
+============================================================
+ℹ️  Server: hpe_evpn_esi_rack_001_sys001
+ℹ️  Routing Zone: blue
+ℹ️  OS Virtual Network: blue_vn_300
+ℹ️  Discovering server configuration...
+✅ Found server 'hpe_evpn_esi_rack_001_sys001' with 2 LAG connections
+ℹ️  Discovering network policies and application points...
+✅ Found OS policy: Tagged VxLAN 'blue_vn_300' (ID: 766c9482-99fd-4a6c-ad8b-1688fbd9102c)
+✅ Found application point: ae1 -> hpe_evpn_esi_rack_001_sys001 (ID: xVZXowwsRXVswg29xQ)
+
+============================================================
+🚀 STARTING PRE-UPGRADE PHASE
+============================================================
+
+🔧 Step 1: Selecting and disabling interfaces for redundancy during upgrade
+ℹ️  Available interface connections:
+    1. eth1 <-> hpe_evpn_esi_rack_001_leaf2:ge-0/0/2
+    2. eth0 <-> hpe_evpn_esi_rack_001_leaf1:ge-0/0/2
+ℹ️  Select which interface(s) to disable during OS upgrade (for redundancy):
+ℹ️  Enter interface numbers separated by commas (e.g., 2,4) or 'default' for automatic selection:
+   Interface selection: 2
+
+⚠️  About to: Disable selected interfaces
+   Details: Will disable the following connection(s) for redundancy during OS upgrade:\n    eth0 <-> hpe_evpn_esi_rack_001_leaf1:ge-0/0/2
+   Do you want to proceed? (y/n): y
+✅ Successfully disabled 1 interface connection(s)
+
+🔧 Step 2: Converting LACP active LAGs to static LAGs
+ℹ️  LAG links to be converted:
+      1. eth1 <-> hpe_evpn_esi_rack_001_leaf2:ge-0/0/2 (Link ID: hpe_evpn_esi_rack_001_leaf2<->hpe_evpn_esi_rack_001_sys001(dual-link)[1])
+      2. eth0 <-> hpe_evpn_esi_rack_001_leaf1:ge-0/0/2 (Link ID: hpe_evpn_esi_rack_001_leaf1<->hpe_evpn_esi_rack_001_sys001(dual-link)[1])
+
+⚠️  About to: Convert LACP LAGs to static LAGs
+   Details: Will change 2 LAG connections from LACP active to static mode for server 'hpe_evpn_esi_rack_001_sys001'
+   Do you want to proceed? (y/n): y
+✅ Successfully converted 2 LAG connections to static mode
+
+🔧 Step 3: Assigning server to OS virtual network 'blue_vn_300'
+ℹ️  Application endpoint interface:
+      Interface: ae1 -> hpe_evpn_esi_rack_001_sys001
+
+⚠️  About to: Assign OS virtual network
+   Details: Will assign server 'hpe_evpn_esi_rack_001_sys001' to OS upgrade virtual network 'blue_vn_300' for maintenance
+   Do you want to proceed? (y/n): y
+✅ Successfully assigned server to OS virtual network 'blue_vn_300'
+
+🔧 Step 4: Deploying pre-upgrade configuration to network devices
+
+⚠️  About to: Deploy configuration changes
+   Details: Will deploy all interface, LAG and virtual network configuration changes for server 'hpe_evpn_esi_rack_001_sys001' to the network infrastructure
+   Do you want to proceed? (y/n): y
+✅ Successfully deployed pre-upgrade configuration
+
+============================================================
+✅ PRE-UPGRADE PHASE COMPLETED SUCCESSFULLY
+============================================================
+ℹ️  Server is now ready for OS upgrade
+ℹ️  Run the script again with --post-upgrade flag after OS upgrade is complete
+✅ Script completed successfully!
+(base) nitinvig@nitinvig-mbp server_os_upgrade %
+(base) nitinvig@nitinvig-mbp server_os_upgrade %
+(base) nitinvig@nitinvig-mbp server_os_upgrade %
+(base) nitinvig@nitinvig-mbp server_os_upgrade %
+(base) nitinvig@nitinvig-mbp server_os_upgrade %
+(base) nitinvig@nitinvig-mbp server_os_upgrade %
+(base) nitinvig@nitinvig-mbp server_os_upgrade % python server_os_upgrade.py -s 'hpe_evpn_esi_rack_001_sys001' -rz 'blue' -os 'blue_vn_300' -bvn 'blue_vn_400' --post-upgrade
+ℹ️  Running POST-UPGRADE phase only
+
+============================================================
+🔄 STARTING POST-UPGRADE PHASE
+============================================================
+
+🔧 Step 1: Re-enabling previously disabled interfaces
+ℹ️  Previously disabled interface connections:
+    • eth0 <-> hpe_evpn_esi_rack_001_leaf1:ge-0/0/2
+
+⚠️  About to: Re-enable disabled interfaces
+   Details: Will re-enable the above connection(s) to restore full redundancy
+   Do you want to proceed? (y/n): y
+✅ Successfully re-enabled 1 interface connection(s)
+
+🔧 Step 2: Converting static LAGs back to LACP active
+ℹ️  LAG links to be converted:
+      1. eth1 <-> hpe_evpn_esi_rack_001_leaf2:ge-0/0/2 (Link ID: hpe_evpn_esi_rack_001_leaf2<->hpe_evpn_esi_rack_001_sys001(dual-link)[1])
+      2. eth0 <-> hpe_evpn_esi_rack_001_leaf1:ge-0/0/2 (Link ID: hpe_evpn_esi_rack_001_leaf1<->hpe_evpn_esi_rack_001_sys001(dual-link)[1])
+
+⚠️  About to: Convert static LAGs back to LACP
+   Details: Will convert 2 LAG connections on server 'hpe_evpn_esi_rack_001_sys001' back to LACP active mode
+   Do you want to proceed? (y/n): y
+✅ Successfully converted 2 LAG connections to LACP active
+
+🔧 Step 3: Removing OS virtual network assignment
+ℹ️  Application endpoint interface:
+      Interface: ae1 -> hpe_evpn_esi_rack_001_sys001
+
+⚠️  About to: Remove OS virtual network assignment
+   Details: Will remove server 'hpe_evpn_esi_rack_001_sys001' from OS upgrade network (maintenance mode)
+   Do you want to proceed? (y/n): y
+✅ Successfully removed OS virtual network 'blue_vn_300' assignment
+
+🔧 Step 4: Assigning server to business virtual network 'blue_vn_400'
+ℹ️  Application endpoint interface:
+      Interface: ae1 -> hpe_evpn_esi_rack_001_sys001
+
+⚠️  About to: Assign business virtual network
+   Details: Will assign server 'hpe_evpn_esi_rack_001_sys001' to production business virtual network 'blue_vn_400'
+   Do you want to proceed? (y/n): y
+✅ Successfully assigned server to business virtual network 'blue_vn_400'
+
+🔧 Step 5: Deploying final post-upgrade configuration
+
+⚠️  About to: Deploy final configuration
+   Details: Will deploy all final LAG and virtual network configuration changes for server 'hpe_evpn_esi_rack_001_sys001' to complete the upgrade
+   Do you want to proceed? (y/n): y
+✅ Successfully deployed post-upgrade configuration
+
+============================================================
+🎉 POST-UPGRADE PHASE COMPLETED SUCCESSFULLY
+============================================================
+ℹ️  Server upgrade workflow completed successfully!
+ℹ️  Server is now running on upgraded OS with production network configuration
+✅ Script completed successfully!
+(base) nitinvig@nitinvig-mbp server_os_upgrade %
