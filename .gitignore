@@ -31,3 +31,5 @@ Thumbs.db
 
 # Project specific
 apstra_config.json
+apstra_server_vlan.log
+apstra_server_vlan_test.txt
