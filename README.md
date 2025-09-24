@@ -1,25 +1,26 @@
 # Apstra Server VLAN Management Script
 
-This Python script automates sserver LAG and VLAN management in Juniper Apstra (DC Director) environments. It has been written for a special Method-of-Procedure that requires the steps mentioned in the following section.
+This Python script automates server LAG and VLAN management in Juniper Apstra (DC Director) environments. It has been written for a special Method-of-Procedure that requires the steps mentioned in the following section.
 
 ## Overview
 
 The script manages the complete workflow for upgrading a server's operating system while maintaining network connectivity:
 
 1. **Pre-Upgrade Phase:**
-   - Disable one of the LAG member interfaces
+   - User selects which LAG member interfaces to disable (for redundancy)
+   - Disable selected LAG member interfaces
    - Convert LACP active LAGs to static LAGs
-   - Assign server to OS upgrade VLAN
+   - Assign server to OS upgrade virtual network
    - Deploy configuration
 
 2. **OS Upgrade Phase:** (Manual - performed by user)
    - Server OS upgrade is performed externally
 
 3. **Post-Upgrade Phase:**
-   - Re-enable disabled LAG members
+   - Re-enable previously disabled LAG members
    - Convert static LAGs back to LACP active
-   - Remove OS upgrade VLAN assignment
-   - Assign server to business VLAN
+   - Remove OS upgrade virtual network assignment
+   - Assign server to business virtual network
    - Deploy final configuration
 
 ## Requirements
@@ -63,8 +64,8 @@ The script expects the following configuration:
 - Server interfaces configured with LACP active
 - The following artifacts must already exist in Apstra:
    - Blueprint
-   - Security zone
-   - Virtual networks and their corresponding connectivity templates for both OS upgrade and business VLANs
+   - Routing zone (security zone)
+   - Virtual networks and their corresponding connectivity templates for both OS upgrade and business virtual networks
 
 ## Usage
 
@@ -72,28 +73,32 @@ The script expects the following configuration:
 
 Pre-upgrade:
 ```bash
-python apstra_server_vlan.py --server-name "server001" --blueprint-name "datacenter-blueprint" --os-vlan 2000
+python apstra_server_vlan.py --server-name "server001" --routing-zone "blue" --os-vn "blue_vn_300"
 ```
 
 Post-upgrade:
 ```bash
-python apstra_server_vlan.py --server-name "server001" --blueprint-name "datacenter-blueprint" --os-vlan 2000 --business-vlan 100 --post-upgrade
+python apstra_server_vlan.py --server-name "server001" --routing-zone "blue" --os-vn "blue_vn_300" --business-vn "blue_vn_400" --post-upgrade
 ```
 
 ### Command Line Options
 
 ```bash
 Required Arguments:
-  --server-name, -s      Server name/label to upgrade
-  --os-vlan, -o         Virtual network for OS upgrade
-  --business-vlan, -b   Virtual network for Business VLAN
+  --server-name, -s       Server name/label to upgrade
+  --routing-zone, -rz     Routing zone name containing virtual networks
+  --os-vn, -os           OS upgrade virtual network name (required for both phases)
+
+Post-Upgrade Required:
+  --business-vn, -bvn    Business virtual network name (required for post-upgrade)
 
 Optional Arguments:
-  --blueprint-name, -bp Blueprint name (can also be in config file)
-  --config, -c          Apstra configuration file (default: apstra_config.json)
-  --post-upgrade        Run only post-upgrade phase (after OS upgrade is complete)
-  --auto-complete       Automatically run both pre and post upgrade phases
-  --dry-run            Dry run mode - discover configuration but make no changes
+  --blueprint-name, -bp  Blueprint name (can also be in config file)
+  --config, -c           Apstra configuration file (default: apstra_config.json)
+  --post-upgrade         Run only post-upgrade phase (after OS upgrade is complete)
+  --auto-complete        Automatically run both pre and post upgrade phases
+  --dry-run             Dry run mode - discover configuration but make no changes
+  --yes, -y             Automatically answer yes to all prompts (non-interactive mode)
 ```
 
 ### Workflow Examples
@@ -102,44 +107,53 @@ Optional Arguments:
 
 **Step 1: Pre-Upgrade**
 ```bash
-python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 100
+python apstra_server_vlan.py -s "server001" -rz "blue" -os "blue_vn_300"
 ```
 
 **Step 2: Perform OS Upgrade** (not handled by the script)
 
 **Step 3: Post-Upgrade**
 ```bash
-python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 100 --post-upgrade
+python apstra_server_vlan.py -s "server001" -rz "blue" -os "blue_vn_300" -bvn "blue_vn_400" --post-upgrade
 ```
 
 #### 2. Dry Run (Discovery Only)
 ```bash
-python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 100 --dry-run
+python apstra_server_vlan.py -s "server001" -rz "blue" --dry-run
 ```
 
 #### 3. Auto-Complete (Testing Only)
 ```bash
-python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 100 --auto-complete
+python apstra_server_vlan.py -s "server001" -rz "blue" -os "blue_vn_300" -bvn "blue_vn_400" --auto-complete
 ```
 
 ## Script Features
 
+### User Interaction & Safety
+- **Interactive Interface Selection**: User chooses which LAG member interfaces to disable during pre-upgrade
+- **User Consent Prompts**: Confirmation required before each major configuration change
+- **Same VN Validation**: Prevents using identical virtual networks for OS and business phases
+- **Dry-run Mode**: Test configuration discovery without making changes
+- **Non-interactive Mode**: `--yes` flag for automation scenarios
+
+### Enhanced Output & Monitoring
+- **LAG Link Details**: Shows specific interface topology (server_interface ↔ switch:switch_interface)
+- **Application Endpoint Info**: Displays interface details during VN assignments
+- **Real-time Status**: Step-by-step progress with clear success/failure indicators
+- **Comprehensive Logging**: Detailed logs with API calls, responses, and timing
+
 ### Automatic Discovery
 - Server configuration and LAG connections
-- Interface IDs for LAG members
-- VLAN policies and application points
-- Blueprint topology information
+- Interface IDs and names for LAG members  
+- Virtual network policies and application points
+- Blueprint topology and routing zones
+- Connectivity templates and policy hierarchy
 
-### Error Handling
-- Comprehensive logging to file and console
-- Graceful error recovery
-- Detailed error messages
-
-### Safety Features
-- Dry-run mode for testing
-- Configuration validation
-- Phase-based execution
-- Deployment status tracking
+### Error Handling & Validation
+- **Argument Validation**: Ensures all required parameters are provided
+- **VN Existence Check**: Validates virtual networks exist in specified routing zone
+- **Policy Discovery**: Automatically finds connectivity templates for virtual networks
+- **Graceful Error Recovery**: Clear error messages with suggested resolutions
 
 ## Logging
 
@@ -155,24 +169,37 @@ Based on the provided JSON data, here's an example using the discovered server:
 
 ```bash
 # Dry run to verify configuration
-python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 300 --dry-run
+python apstra_server_vlan.py -s "hpe_evpn_esi_rack_001_sys001" -rz "blue" --dry-run
 
 # Pre-upgrade phase
-python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000
+python apstra_server_vlan.py -s "hpe_evpn_esi_rack_001_sys001" -rz "blue" -os "blue_vn_300"
 
 # [Perform OS upgrade manually]
 
 # Post-upgrade phase
-python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 300 --post-upgrade
+python apstra_server_vlan.py -s "hpe_evpn_esi_rack_001_sys001" -rz "blue" -os "blue_vn_300" -bvn "blue_vn_400" --post-upgrade
 ```
+
+## Important Validation Rules
+
+### Virtual Network Requirements
+- **OS-VN and Business-VN Must Be Different**: The script validates that OS and business virtual networks are not the same
+- **Both VNs Must Exist**: Virtual networks must exist in the specified routing zone before running the script
+- **Connectivity Templates Required**: Each virtual network must have corresponding connectivity templates configured
+
+### Interactive Prompts
+During execution, the script will prompt for:
+1. **Interface Selection**: Choose which LAG member interfaces to disable (for redundancy)
+2. **User Consent**: Confirmation before each major configuration change
+3. **Same VN Warning**: If OS and business VNs are identical, the script will exit with an error
 
 ## Network Topology
 
 The script handles servers with this topology:
 ```
-Server (server001)
-├── eth0 ──(LAG1)── leaf1:ge-0/0/2
-└── eth1 ──(LAG1)── leaf2:ge-0/0/2
+Server (hpe_evpn_esi_rack_001_sys001)
+├── eth0 ──(LAG1)── hpe_evpn_esi_rack_001_leaf1:ge-0/0/2
+└── eth1 ──(LAG1)── hpe_evpn_esi_rack_001_leaf2:ge-0/0/2
 ```
 
 ## Troubleshooting
@@ -184,17 +211,28 @@ Server (server001)
    - Check server URL and port
 
 2. **Server Not Found**
-   - Verify server name/label
-   - Check blueprint ID
-   - Ensure server exists in blueprint
+   - Verify server name/label matches exactly
+   - Check blueprint name is correct
+   - Ensure server exists in the specified blueprint
 
-3. **No LAG Connections Found**
-   - Verify server has dual-link configuration
-   - Check cabling map data
+3. **Virtual Network Not Found**
+   - Verify VN names exist in the specified routing zone  
+   - Check routing zone name is correct
+   - Ensure VNs have connectivity templates configured
 
-4. **Policy Discovery Failed**
-   - VLAN policies may need manual specification
-   - Check connectivity templates configuration
+4. **Same Virtual Network Error**
+   - Use different virtual networks for `--os-vn` and `--business-vn`
+   - OS VN is for maintenance, Business VN is for production traffic
+
+5. **No LAG Connections Found**
+   - Verify server has dual-link LAG configuration
+   - Check server is connected to leaf pair
+   - Ensure cabling map data is available
+
+6. **Policy Discovery Failed**
+   - Check connectivity templates are properly configured
+   - Verify virtual networks have associated policies
+   - Ensure policy hierarchy is correct (batch → pipeline → AttachSingleVLAN)
 
 ### Debug Mode
 
