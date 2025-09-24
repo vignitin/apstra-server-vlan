@@ -7,20 +7,19 @@ This Python script automates server LAG and VLAN management in Juniper Apstra (D
 The script manages the complete workflow for upgrading a server's operating system while maintaining network connectivity:
 
 1. **Pre-Upgrade Phase:**
-   - User selects which LAG member interfaces to disable (for redundancy)
-   - Disable selected LAG member interfaces
-   - Convert LACP active LAGs to static LAGs
-   - Assign server to OS upgrade virtual network
+   - Disable selected LAG member interfaces during OS upgrade process
+   - Change LACP mode for the LAG interfaces from LACP active to static LAG
+   - Assign server LAG interfaces to OS upgrade virtual network
    - Deploy configuration
 
 2. **OS Upgrade Phase:** (Manual - performed by user)
    - Server OS upgrade is performed externally
 
 3. **Post-Upgrade Phase:**
-   - Re-enable previously disabled LAG members
-   - Convert static LAGs back to LACP active
+   - Re-enable previously disabled LAG member interfaces
+   - Revert LACP mode from static LAG back to LACP active
    - Remove OS upgrade virtual network assignment
-   - Assign server to business virtual network
+   - Assign server LAG interfaces to business virtual network
    - Deploy final configuration
 
 ## Requirements
@@ -87,18 +86,18 @@ python apstra_server_vlan.py --server-name "server001" --routing-zone "blue" --o
 Required Arguments:
   --server-name, -s       Server name/label to upgrade
   --routing-zone, -rz     Routing zone name containing virtual networks
-  --os-vn, -os           OS upgrade virtual network name (required for both phases)
+  --os-vn, -os            OS upgrade virtual network name (required for both phases)
 
-Post-Upgrade Required:
-  --business-vn, -bvn    Business virtual network name (required for post-upgrade)
+Additional required arguments for Post-Upgrade:
+  --business-vn, -bvn     Business virtual network name (required for post-upgrade)
 
 Optional Arguments:
-  --blueprint-name, -bp  Blueprint name (can also be in config file)
-  --config, -c           Apstra configuration file (default: apstra_config.json)
-  --post-upgrade         Run only post-upgrade phase (after OS upgrade is complete)
-  --auto-complete        Automatically run both pre and post upgrade phases
-  --dry-run             Dry run mode - discover configuration but make no changes
-  --yes, -y             Automatically answer yes to all prompts (non-interactive mode)
+  --blueprint-name, -bp   Blueprint name (can also be in config file)
+  --config, -c            Apstra configuration file (default: apstra_config.json)
+  --post-upgrade          Run only post-upgrade phase (after OS upgrade is complete)
+  --auto-complete         Automatically run both pre and post upgrade phases
+  --dry-run               Dry run mode - discover configuration but make no changes
+  --yes, -y               Automatically answer yes to all prompts (non-interactive mode)
 ```
 
 ### Workflow Examples
@@ -165,26 +164,25 @@ The script creates detailed logs in `apstra_server_vlan.log` including:
 
 ## Example Usage
 
-Based on the provided JSON data, here's an example using the discovered server:
 
 ```bash
 # Dry run to verify configuration
-python apstra_server_vlan.py -s "hpe_evpn_esi_rack_001_sys001" -rz "blue" --dry-run
+python apstra_server_vlan.py -s "server001" -rz "blue" --dry-run
 
 # Pre-upgrade phase
-python apstra_server_vlan.py -s "hpe_evpn_esi_rack_001_sys001" -rz "blue" -os "blue_vn_300"
+python apstra_server_vlan.py -s "server001" -rz "blue" -os "blue_vn_300"
 
 # [Perform OS upgrade manually]
 
 # Post-upgrade phase
-python apstra_server_vlan.py -s "hpe_evpn_esi_rack_001_sys001" -rz "blue" -os "blue_vn_300" -bvn "blue_vn_400" --post-upgrade
+python apstra_server_vlan.py -s "server001" -rz "blue" -os "blue_vn_300" -bvn "blue_vn_400" --post-upgrade
 ```
 
 ## Important Validation Rules
 
 ### Virtual Network Requirements
 - **OS-VN and Business-VN Must Be Different**: The script validates that OS and business virtual networks are not the same
-- **Both VNs Must Exist**: Virtual networks must exist in the specified routing zone before running the script
+- **RZ and both VNs Must Exist**: Virtual networks must exist in the specified routing zone before running the script
 - **Connectivity Templates Required**: Each virtual network must have corresponding connectivity templates configured
 
 ### Interactive Prompts
@@ -193,14 +191,6 @@ During execution, the script will prompt for:
 2. **User Consent**: Confirmation before each major configuration change
 3. **Same VN Warning**: If OS and business VNs are identical, the script will exit with an error
 
-## Network Topology
-
-The script handles servers with this topology:
-```
-Server (hpe_evpn_esi_rack_001_sys001)
-├── eth0 ──(LAG1)── hpe_evpn_esi_rack_001_leaf1:ge-0/0/2
-└── eth1 ──(LAG1)── hpe_evpn_esi_rack_001_leaf2:ge-0/0/2
-```
 
 ## Troubleshooting
 
