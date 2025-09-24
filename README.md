@@ -1,14 +1,14 @@
 # Apstra Server VLAN Management Script
 
-This Python script automates server VLAN management and OS upgrade processes in Juniper Apstra environments with dual-LAG configurations.
+This Python script automates sserver LAG and VLAN management in Juniper Apstra (DC Director) environments. It has been written for a special Method-of-Procedure that requires the steps mentioned in the following section.
 
 ## Overview
 
 The script manages the complete workflow for upgrading a server's operating system while maintaining network connectivity:
 
 1. **Pre-Upgrade Phase:**
+   - Disable one of the LAG member interfaces
    - Convert LACP active LAGs to static LAGs
-   - Disable one LAG member for redundancy
    - Assign server to OS upgrade VLAN
    - Deploy configuration
 
@@ -27,7 +27,6 @@ The script manages the complete workflow for upgrading a server's operating syst
 - Python 3.7+
 - `httpx` library for HTTP requests
 - Access to Juniper Apstra system
-- Server must have dual-LAG configuration (connected to leaf pair)
 
 ## Installation
 
@@ -58,18 +57,27 @@ Create `apstra_config.json` with your Apstra system details:
 
 ### Server Requirements
 
-The script expects servers with the following configuration:
-- Dual-LAG setup (connected to leaf pair)
-- Server interfaces configured with LACP active
+The script expects the following configuration:
 - Server must exist in the Apstra blueprint
+- LAG setup (connected to a leaf pair in the Apstra-managed DC fabric)
+- Server interfaces configured with LACP active
+- The following artifacts must already exist in Apstra:
+   - Blueprint
+   - Security zone
+   - Virtual networks and their corresponding connectivity templates for both OS upgrade and business VLANs
 
 ## Usage
 
 ### Basic Usage
 
-Run the complete pre-upgrade phase:
+Pre-upgrade:
 ```bash
-python apstra_server_vlan.py --server-name "server001" --blueprint-name "datacenter-blueprint" --os-vlan 2000 --business-vlan 100
+python apstra_server_vlan.py --server-name "server001" --blueprint-name "datacenter-blueprint" --os-vlan 2000
+```
+
+Post-upgrade:
+```bash
+python apstra_server_vlan.py --server-name "server001" --blueprint-name "datacenter-blueprint" --os-vlan 2000 --business-vlan 100 --post-upgrade
 ```
 
 ### Command Line Options
@@ -77,8 +85,8 @@ python apstra_server_vlan.py --server-name "server001" --blueprint-name "datacen
 ```bash
 Required Arguments:
   --server-name, -s      Server name/label to upgrade
-  --os-vlan, -o         OS upgrade VLAN ID
-  --business-vlan, -b   Business VLAN ID
+  --os-vlan, -o         Virtual network for OS upgrade
+  --business-vlan, -b   Virtual network for Business VLAN
 
 Optional Arguments:
   --blueprint-name, -bp Blueprint name (can also be in config file)
@@ -97,7 +105,7 @@ Optional Arguments:
 python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 100
 ```
 
-**Step 2: Perform OS Upgrade** (Manual process)
+**Step 2: Perform OS Upgrade** (not handled by the script)
 
 **Step 3: Post-Upgrade**
 ```bash
@@ -150,7 +158,7 @@ Based on the provided JSON data, here's an example using the discovered server:
 python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 300 --dry-run
 
 # Pre-upgrade phase
-python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000 -b 300
+python apstra_server_vlan.py -s "server001" -bp "datacenter-blueprint" -o 2000
 
 # [Perform OS upgrade manually]
 
